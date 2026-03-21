@@ -1,0 +1,20 @@
+services:
+  - name: identity-users
+    repo_url: https://github.com/SEU_ORG/identity-users
+    runner_token: SEU_TOKEN_AQUI
+
+  - name: livros-service
+    repo_url: https://github.com/SEU_ORG/livros-service
+    runner_token: SEU_TOKEN_AQUI
+
+  - name: ms-pedidos
+    repo_url: https://github.com/SEU_ORG/ms-pedidos
+    runner_token: SEU_TOKEN_AQUI
+
+  - name: notification-service
+    repo_url: https://github.com/SEU_ORG/notification-service
+    runner_token: SEU_TOKEN_AQUI
+
+  - name: payment-service
+    repo_url: https://github.com/SEU_ORG/payment-service
+    runner_token: SEU_TOKEN_AQUI

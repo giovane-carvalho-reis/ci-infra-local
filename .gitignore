@@ -1,15 +1,8 @@
-# Credenciais locais - nunca versionar
-.env
-**/.env
-.env.*
-**/.env.*
-!.env.example
-!**/.env.example
+# Local configuration with sensitive values
+services.yml
 
-# IDEs
-.vscode/
-.idea/
+# Runtime-generated env files
+.generated/
 
-# OS
-.DS_Store
-Thumbs.db
+# Generic local env files
+*.env
