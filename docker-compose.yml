@@ -1,18 +1,19 @@
+version: "3.9"
+
 services:
   github-runner:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: github-runner-${SERVICE_NAME}
     environment:
       REPO_URL: ${REPO_URL}
       RUNNER_TOKEN: ${RUNNER_TOKEN}
+      RUNNER_NAME: ${RUNNER_NAME}
+      RUNNER_LABELS: ${RUNNER_LABELS}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    healthcheck:
-      test: ["CMD-SHELL", "pgrep -f Runner.Listener >/dev/null"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    restart: on-failure:5
+      - runner-data:/actions-runner
+    restart: unless-stopped
+
+volumes:
+  runner-data:

@@ -1,0 +1,35 @@
+name: Deploy Local (Template)
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  # Troque <service-label> pelo nome do micro (ms-pedidos, notification-service, payment-service)
+  group: deploy-<service-label>
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    # Ajuste o ultimo label para o micro correto
+    runs-on: [self-hosted, linux, docker, <service-label>]
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Opcional: habilite esta etapa conforme stack do micro
+      # - name: Testes
+      #   run: |
+      #     echo "Adicione seus testes aqui"
+
+      - name: Build sem cache
+        run: docker compose build --no-cache
+
+      - name: Recriar containers
+        run: docker compose up -d --force-recreate
+
+      - name: Status dos containers
+        run: docker compose ps

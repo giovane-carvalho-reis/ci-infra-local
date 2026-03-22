@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import shutil
 import subprocess
 import sys
@@ -16,6 +17,7 @@ ROOT_DIR = Path(__file__).resolve().parent
 CONFIG_TEMPLATE = ROOT_DIR / "services.template.yml"
 CONFIG_FILE = ROOT_DIR / "services.yml"
 GENERATED_DIR = ROOT_DIR / ".generated"
+DEFAULT_RUNNER_LABELS = ["self-hosted", "linux", "docker", "multi"]
 
 
 @dataclass
@@ -31,6 +33,27 @@ class ServiceConfig:
             raise ValueError(f"repo_url vazio para {self.name}")
         if not self.runner_token.strip():
             raise ValueError(f"runner_token vazio para {self.name}")
+
+
+def normalize_name(value: str) -> str:
+    normalized = re.sub(r"[^a-zA-Z0-9_-]", "-", value.strip().lower())
+    normalized = re.sub(r"-{2,}", "-", normalized)
+    return normalized.strip("-_")
+
+
+def compose_project_name(service_name: str) -> str:
+    normalized = normalize_name(service_name)
+    if not normalized:
+        raise ValueError("Nome de servico invalido para gerar projeto do Docker Compose")
+    return f"runner-{normalized}"
+
+
+def build_runner_labels(service_name: str) -> str:
+    service_label = normalize_name(service_name)
+    if not service_label:
+        raise ValueError("Nome de servico invalido para gerar labels do runner")
+    labels = [*DEFAULT_RUNNER_LABELS, service_label]
+    return ",".join(labels)
 
 
 class ServiceConfigLoader:
@@ -98,10 +121,14 @@ def get_service(items: Iterable[ServiceConfig], name: str) -> ServiceConfig:
 def write_env_file(service: ServiceConfig) -> Path:
     GENERATED_DIR.mkdir(exist_ok=True)
     env_file = GENERATED_DIR / f"{service.name}.env"
+    runner_name = compose_project_name(service.name)
+    runner_labels = build_runner_labels(service.name)
     content = (
         f"SERVICE_NAME={service.name}\n"
         f"REPO_URL={service.repo_url}\n"
         f"RUNNER_TOKEN={service.runner_token}\n"
+        f"RUNNER_NAME={runner_name}\n"
+        f"RUNNER_LABELS={runner_labels}\n"
     )
     env_file.write_text(content, encoding="utf-8")
     return env_file
@@ -115,7 +142,8 @@ def remove_env_file(service: ServiceConfig) -> None:
 
 def run_compose(service: ServiceConfig, compose_args: List[str], dry_run: bool = False) -> int:
     env_file = write_env_file(service)
-    cmd = ["docker", "compose", "--env-file", str(env_file), *compose_args]
+    project_name = compose_project_name(service.name)
+    cmd = ["docker", "compose", "-p", project_name, "--env-file", str(env_file), *compose_args]
     print(f"[{service.name}] Executando: {' '.join(cmd)}")
     if dry_run:
         return 0

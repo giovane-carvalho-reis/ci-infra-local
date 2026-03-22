@@ -97,6 +97,64 @@ Executar sem aplicar alteracoes (dry-run):
 
 - python manage_services.py --dry-run up ms-pedidos
 
+## Isolamento por servico
+
+Cada servico agora roda em um projeto Docker Compose dedicado, evitando conflito entre runners.
+
+- Projeto Compose: runner-<nome-do-servico>
+- Nome do runner: runner-<nome-do-servico>
+- Labels do runner: self-hosted,linux,docker,multi,<nome-do-servico>
+
+Exemplo para ms-pedidos:
+
+- projeto: runner-ms-pedidos
+- labels: self-hosted,linux,docker,multi,ms-pedidos
+
+## Integracao de deploy local por branch (GitHub Actions)
+
+Para cada microsservico (ms-pedidos, notification-service, payment-service), mantenha um workflow no proprio repositorio do micro com gatilho na branch main e execucao no runner dedicado por label.
+
+Exemplo minimo de workflow no repositorio do micro:
+
+```yaml
+name: Deploy Local
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: deploy-ms-pedidos
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux, docker, ms-pedidos]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build e recreate
+        run: |
+          docker compose build --no-cache
+          docker compose up -d --force-recreate
+
+      - name: Healthcheck basico
+        run: docker compose ps
+```
+
+Notas importantes:
+
+- Ajuste o label final no runs-on para cada micro:
+  - ms-pedidos -> ms-pedidos
+  - notification-service -> notification-service
+  - payment-service -> payment-service
+- Rode os comandos de deploy no diretorio onde esta o docker-compose do proprio micro.
+- Use GitHub Secrets para credenciais sensiveis; nao versionar tokens.
+- Nao e necessario expor webhook HTTP local para esse fluxo.
+- Template pronto neste repositorio: workflow-templates/deploy-local.template.yml
+
 ## Mecanismo de trava para credenciais
 
 - services.template.yml usa apenas placeholders

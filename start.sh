@@ -16,6 +16,7 @@ if [ ! -S "/var/run/docker.sock" ]; then
 fi
 
 RUNNER_NAME="${RUNNER_NAME:-$(hostname)}"
+RUNNER_LABELS="${RUNNER_LABELS:-self-hosted,linux,docker,multi}"
 
 ./config.sh \
   --url "${REPO_URL}" \
@@ -23,6 +24,7 @@ RUNNER_NAME="${RUNNER_NAME:-$(hostname)}"
   --unattended \
   --replace \
   --name "${RUNNER_NAME}" \
+  --labels "${RUNNER_LABELS}" \
   --work "_work"
 
 ./run.sh
