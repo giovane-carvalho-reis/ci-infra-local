@@ -173,5 +173,6 @@ Notas importantes:
 - Erro "Docker nao encontrado": inicie o Docker Desktop e valide com docker --version.
 - Erro "services.yml nao encontrado": rode python manage_services.py init.
 - Erro de placeholder em token/repo: atualize repo_url e runner_token em services.yml.
+- Erro "Libicu's dependencies is missing for Dotnet Core 6.0": atualize para a versao mais recente deste repositorio (Dockerfile com libicu70), depois recrie as imagens/containers com docker compose build --no-cache e python manage_services.py up-all.
 - Container reinicia continuamente: rode python manage_services.py logs <servico> e confira token/URL.
 - Jobs com Docker falhando: confirme se /var/run/docker.sock esta disponivel no host.
