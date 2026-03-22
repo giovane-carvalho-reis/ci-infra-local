@@ -18,13 +18,17 @@ fi
 RUNNER_NAME="${RUNNER_NAME:-$(hostname)}"
 RUNNER_LABELS="${RUNNER_LABELS:-self-hosted,linux,docker,multi}"
 
-./config.sh \
-  --url "${REPO_URL}" \
-  --token "${RUNNER_TOKEN}" \
-  --unattended \
-  --replace \
-  --name "${RUNNER_NAME}" \
-  --labels "${RUNNER_LABELS}" \
-  --work "_work"
+if [ ! -f ".runner" ]; then
+  ./config.sh \
+    --url "${REPO_URL}" \
+    --token "${RUNNER_TOKEN}" \
+    --unattended \
+    --replace \
+    --name "${RUNNER_NAME}" \
+    --labels "${RUNNER_LABELS}" \
+    --work "_work"
+else
+  echo "Runner ja configurado; reutilizando registro existente."
+fi
 
 ./run.sh
