@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     libkrb5-3 \
     sudo \
     docker.io \
+    gosu \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /actions-runner
@@ -31,8 +32,8 @@ RUN ./bin/installdependencies.sh
 RUN useradd -m -G docker runner && chown -R runner:runner /actions-runner
 
 COPY start.sh .
-RUN chmod +x start.sh
+COPY entrypoint.sh .
+RUN chmod +x start.sh entrypoint.sh
 
-USER runner
-
-CMD ["./start.sh"]
+# Não define USER runner aqui, entrypoint faz o drop de privilégio
+ENTRYPOINT ["/entrypoint.sh"]
