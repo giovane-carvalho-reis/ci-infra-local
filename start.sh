@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [ -d "_work" ]; then
+  chown -R runner:runner "_work"
+fi
+
 if [ -z "${REPO_URL:-}" ] || [ -z "${RUNNER_TOKEN:-}" ]; then
   echo "REPO_URL e RUNNER_TOKEN devem estar definidos no arquivo .env do servico."
   exit 1
