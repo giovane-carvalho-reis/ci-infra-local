@@ -144,8 +144,8 @@ def cmd_list(items: List[ServiceConfig]) -> int:
 
 
 def cmd_up(items: List[ServiceConfig], service_name: str, dry_run: bool = False) -> int:
-    validate_no_placeholders(items)
     service = get_service(items, service_name)
+    validate_no_placeholders([service])
     return run_compose(service, ["up", "-d"], dry_run=dry_run)
 
 
